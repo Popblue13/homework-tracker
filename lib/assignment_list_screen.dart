@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'presenters/assignment_presenter.dart';
+
 class AssignmentListScreen extends StatefulWidget {
   const AssignmentListScreen({super.key});
 
@@ -8,7 +10,7 @@ class AssignmentListScreen extends StatefulWidget {
 }
 
 class _AssignmentListScreenState extends State<AssignmentListScreen> {
-  final List<Map<String, dynamic>> _assignments = [];
+  final AssignmentPresenter _presenter = AssignmentPresenter();
 
   void _showAddAssignmentDialog() {
     String newAssignmentTitle = '';
@@ -26,63 +28,104 @@ class _AssignmentListScreenState extends State<AssignmentListScreen> {
             onChanged: (value) {
               newAssignmentTitle = value;
             },
-          ), // TextField
+          ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context), // Cancel button
+              onPressed: () => Navigator.pop(context),
               child: const Text('Cancel'),
-            ), // TextButton
+            ),
             TextButton(
               onPressed: () {
                 if (newAssignmentTitle.trim().isNotEmpty) {
                   setState(() {
-                    _assignments.add({
-                      'title': newAssignmentTitle.trim(),
-                      'completed': false,
-                    });
+                    _presenter.addAssignment(newAssignmentTitle.trim());
                   });
                 }
-                Navigator.pop(context); // Close dialog
+                Navigator.pop(context);
               },
               child: const Text('Add'),
-            ), // TextButton
+            ),
           ],
-        ); // AlertDialog
+        );
       },
     );
   }
 
-  void _toggleCompleted(int index, bool? value) {
-    setState(() {
-      _assignments[index]['completed'] = value ?? false;
-    });
+  void _showEditAssignmentDialog(int index) {
+    final assignment = _presenter.assignments[index];
+    String editedTitle = assignment.title;
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Edit Assignment'),
+          content: TextField(
+            autofocus: true,
+            controller: TextEditingController(text: assignment.title),
+            decoration: const InputDecoration(
+              hintText: 'Enter assignment title',
+            ),
+            onChanged: (value) {
+              editedTitle = value;
+            },
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                if (editedTitle.trim().isNotEmpty) {
+                  setState(() {
+                    _presenter.addAssignment(editedTitle.trim());
+                    _presenter.deleteAssignment(index);
+                  });
+                }
+
+                Navigator.pop(context);
+              },
+              child: const Text('Save'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final assignments = _presenter.assignments;
+
     return Scaffold(
       appBar: AppBar(title: const Text('Assignments')),
       body: ListView.builder(
-        itemCount: _assignments.length,
+        itemCount: assignments.length,
         itemBuilder: (context, index) {
+          final assignment = assignments[index];
+
           return CheckboxListTile(
-            title: Text(
-              _assignments[index]['title'],
-              style: TextStyle(
-                decoration: _assignments[index]['completed']
-                    ? TextDecoration.lineThrough
-                    : TextDecoration.none,
-              ),
+            title: Text(assignment.title),
+            value: assignment.isCompleted,
+            onChanged: (value) {
+              setState(() {
+                _presenter.toggleCompleted(index);
+              });
+            },
+            secondary: IconButton(
+              icon: const Icon(Icons.edit),
+              onPressed: () {
+                _showEditAssignmentDialog(index);
+              },
             ),
-            value: _assignments[index]['completed'],
-            onChanged: (value) => _toggleCompleted(index, value),
-          ); // CheckboxListTile
+          );
         },
-      ), // ListView.builder
+      ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _showAddAssignmentDialog, // use the dialog function
+        onPressed: _showAddAssignmentDialog,
         child: const Icon(Icons.add),
-      ), // FloatingActionButton
-    ); // Scaffold
+      ),
+    );
   }
 }

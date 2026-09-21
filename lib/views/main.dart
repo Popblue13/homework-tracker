@@ -1,8 +1,7 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 
-import 'main_navigation.dart';
+import '../main_navigation.dart';
 
 void main() {
   runApp(const HomeworkTrackerApp());
