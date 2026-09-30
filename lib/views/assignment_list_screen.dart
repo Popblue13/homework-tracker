@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'presenters/assignment_presenter.dart';
+import '../presenters/assignment_presenter.dart';
 
 class AssignmentListScreen extends StatefulWidget {
   const AssignmentListScreen({super.key});
