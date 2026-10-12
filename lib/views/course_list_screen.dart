@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../presenters/course_presenter.dart';
+import '../widgets/add_fab.dart';
 
 class CourseListScreen extends StatefulWidget {
   const CourseListScreen({super.key});
@@ -89,10 +90,7 @@ class _CourseListScreenState extends State<CourseListScreen> {
                 ); // ListTile
               },
             ), // ListView.builder
-      floatingActionButton: FloatingActionButton(
-        onPressed: _showAddCourseDialog,
-        child: const Icon(Icons.add),
-      ), // FloatingActionButton
+      floatingActionButton: AddFAB(onPressed: _showAddCourseDialog),
     ); // Scaffold
   }
 }
