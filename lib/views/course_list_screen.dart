@@ -23,6 +23,7 @@ class _CourseListScreenState extends State<CourseListScreen> {
 
   Future<void> _loadCourses() async {
     await presenter.loadCourses();
+    if (!mounted) return;
     setState(() => _isLoading = false);
   }
 

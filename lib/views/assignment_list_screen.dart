@@ -18,6 +18,7 @@ class _AssignmentListScreenState extends State<AssignmentListScreen> {
 
   bool _isLoading = true;
   String? _selectedCourseFilter;
+  String _searchQuery = '';
   String? _newAssignmentCourse;
   List<String> _courseNames = [];
 
@@ -63,7 +64,8 @@ class _AssignmentListScreenState extends State<AssignmentListScreen> {
                     items: _courseNames.map((name) {
                       return DropdownMenuItem(value: name, child: Text(name));
                     }).toList(),
-                    onChanged: (value) => setDialogState(() => _newAssignmentCourse = value),
+                    onChanged: (value) =>
+                        setDialogState(() => _newAssignmentCourse = value),
                   ),
                 ],
               ),
@@ -97,11 +99,15 @@ class _AssignmentListScreenState extends State<AssignmentListScreen> {
   @override
   Widget build(BuildContext context) {
     final assignments = _assignmentPresenter.assignments;
-    final displayedAssignments = _selectedCourseFilter == null
-        ? assignments
-        : assignments
-            .where((a) => a.courseName == _selectedCourseFilter)
-            .toList();
+    final displayedAssignments = assignments.where((assignment) {
+      final matchesCourse =
+          _selectedCourseFilter == null ||
+          assignment.courseName == _selectedCourseFilter;
+      final matchesSearch = assignment.title.toLowerCase().contains(
+        _searchQuery.toLowerCase(),
+      );
+      return matchesCourse && matchesSearch;
+    }).toList();
 
     return Scaffold(
       appBar: AppBar(
@@ -132,24 +138,42 @@ class _AssignmentListScreenState extends State<AssignmentListScreen> {
             ),
         ],
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : ListView.builder(
-              itemCount: displayedAssignments.length,
-              itemBuilder: (context, index) {
-                final assignment = displayedAssignments[index];
-
-                return CheckboxListTile(
-                  title: Text(assignment.title),
-                  subtitle: Text('Course: ${assignment.courseName}'),
-                  value: assignment.isCompleted,
-                  onChanged: (_) async {
-                    await _assignmentPresenter.toggleCompleted(index);
-                    setState(() {});
-                  },
-                );
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: TextField(
+              decoration: const InputDecoration(
+                hintText: 'Search assignments',
+                prefixIcon: Icon(Icons.search),
+              ),
+              onChanged: (value) {
+                setState(() => _searchQuery = value);
               },
             ),
+          ),
+          Expanded(
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : ListView.builder(
+                    itemCount: displayedAssignments.length,
+                    itemBuilder: (context, index) {
+                      final assignment = displayedAssignments[index];
+
+                      return CheckboxListTile(
+                        title: Text(assignment.title),
+                        subtitle: Text('Course: ${assignment.courseName}'),
+                        value: assignment.isCompleted,
+                        onChanged: (_) async {
+                          await _assignmentPresenter.toggleCompleted(index);
+                          setState(() {});
+                        },
+                      );
+                    },
+                  ),
+          ),
+        ],
+      ),
       floatingActionButton: AddFAB(onPressed: _showAddAssignmentDialog),
     );
   }
