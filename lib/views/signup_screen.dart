@@ -20,16 +20,36 @@ class _SignupScreenState extends State<SignupScreen> {
   String? _errorMessage;
 
   void _handleSignup() async {
+    final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
     final confirmPassword = _confirmPasswordController.text.trim();
 
+    // Validate email format
+    if (!email.contains('@') || !email.contains('.')) {
+      setState(
+        () => _errorMessage = "Please enter a valid email address.",
+      );
+      return;
+    }
+
+    // Validate password length
+    if (password.length < 6) {
+      setState(
+        () => _errorMessage = "Password must be at least 6 characters.",
+      );
+      return;
+    }
+
+    // Make sure passwords match
     if (password != confirmPassword) {
-      setState(() => _errorMessage = "Passwords do not match.");
+      setState(
+        () => _errorMessage = "Passwords do not match.",
+      );
       return;
     }
 
     final error = await _presenter.signUp(
-      _emailController.text.trim(),
+      email,
       password,
     );
 
@@ -38,7 +58,9 @@ class _SignupScreenState extends State<SignupScreen> {
     } else {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (_) => const MainNavigationScreen()),
+        MaterialPageRoute(
+          builder: (_) => const MainNavigationScreen(),
+        ),
       );
     }
   }
@@ -55,20 +77,29 @@ class _SignupScreenState extends State<SignupScreen> {
         child: Column(
           children: [
             if (_errorMessage != null)
-              Text(_errorMessage!, style: const TextStyle(color: Colors.red)),
+              Text(
+                _errorMessage!,
+                style: const TextStyle(color: Colors.red),
+              ),
             TextField(
               controller: _emailController,
-              decoration: const InputDecoration(labelText: 'Email'),
+              decoration: const InputDecoration(
+                labelText: 'Email',
+              ),
             ),
             TextField(
               controller: _passwordController,
               obscureText: true,
-              decoration: const InputDecoration(labelText: 'Password'),
+              decoration: const InputDecoration(
+                labelText: 'Password',
+              ),
             ),
             TextField(
               controller: _confirmPasswordController,
               obscureText: true,
-              decoration: const InputDecoration(labelText: 'Confirm Password'),
+              decoration: const InputDecoration(
+                labelText: 'Confirm Password',
+              ),
             ),
             const SizedBox(height: 20),
             ElevatedButton(
@@ -79,10 +110,14 @@ class _SignupScreenState extends State<SignupScreen> {
               onPressed: () {
                 Navigator.pushReplacement(
                   context,
-                  MaterialPageRoute(builder: (_) => const LoginScreen()),
+                  MaterialPageRoute(
+                    builder: (_) => const LoginScreen(),
+                  ),
                 );
               },
-              child: const Text('Already have an account? Log in'),
+              child: const Text(
+                'Already have an account? Log in',
+              ),
             ),
           ],
         ),

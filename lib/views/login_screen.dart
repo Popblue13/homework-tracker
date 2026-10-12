@@ -19,9 +19,28 @@ class _LoginScreenState extends State<LoginScreen> {
   String? _errorMessage;
 
   void _handleLogin() async {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+
+    // Validate email format
+    if (!email.contains('@') || !email.contains('.')) {
+      setState(
+        () => _errorMessage = "Please enter a valid email address.",
+      );
+      return;
+    }
+
+    // Make sure a password was entered
+    if (password.isEmpty) {
+      setState(
+        () => _errorMessage = "Please enter your password.",
+      );
+      return;
+    }
+
     final error = await _presenter.login(
-      _emailController.text.trim(),
-      _passwordController.text.trim(),
+      email,
+      password,
     );
 
     if (error != null) {
@@ -29,7 +48,9 @@ class _LoginScreenState extends State<LoginScreen> {
     } else {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => const MainNavigationScreen()),
+        MaterialPageRoute(
+          builder: (_) => const MainNavigationScreen(),
+        ),
       );
     }
   }
@@ -46,26 +67,40 @@ class _LoginScreenState extends State<LoginScreen> {
         child: Column(
           children: [
             if (_errorMessage != null)
-              Text(_errorMessage!, style: const TextStyle(color: Colors.red)),
+              Text(
+                _errorMessage!,
+                style: const TextStyle(color: Colors.red),
+              ),
             TextField(
               controller: _emailController,
-              decoration: const InputDecoration(labelText: 'Email'),
+              decoration: const InputDecoration(
+                labelText: 'Email',
+              ),
             ),
             TextField(
               controller: _passwordController,
               obscureText: true,
-              decoration: const InputDecoration(labelText: 'Password'),
+              decoration: const InputDecoration(
+                labelText: 'Password',
+              ),
             ),
             const SizedBox(height: 20),
-            ElevatedButton(onPressed: _handleLogin, child: const Text('Login')),
+            ElevatedButton(
+              onPressed: _handleLogin,
+              child: const Text('Login'),
+            ),
             TextButton(
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => const SignupScreen()),
+                  MaterialPageRoute(
+                    builder: (_) => const SignupScreen(),
+                  ),
                 );
               },
-              child: const Text('Don\'t have an account? Sign up'),
+              child: const Text(
+                'Don\'t have an account? Sign up',
+              ),
             ),
           ],
         ),
