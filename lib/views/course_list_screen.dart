@@ -14,6 +14,7 @@ class _CourseListScreenState extends State<CourseListScreen> {
   final CoursePresenter presenter = CoursePresenter();
 
   bool _isLoading = true;
+  String _searchQuery = '';
 
   @override
   void initState() {
@@ -74,23 +75,44 @@ class _CourseListScreenState extends State<CourseListScreen> {
   @override
   Widget build(BuildContext context) {
     final courses = presenter.courses;
+    final displayedCourses = courses.where((course) {
+      return course.name.toLowerCase().contains(_searchQuery.toLowerCase());
+    }).toList();
 
     return Scaffold(
       appBar: AppBar(title: const Text('Courses')),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : ListView.builder(
-              itemCount: courses.length,
-              itemBuilder: (context, index) {
-                final course = courses[index];
-                return ListTile(
-                  title: Text(course.name),
-                  subtitle: course.description != null
-                      ? Text(course.description!)
-                      : null,
-                ); // ListTile
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: TextField(
+              decoration: const InputDecoration(
+                hintText: 'Search courses',
+                prefixIcon: Icon(Icons.search),
+              ),
+              onChanged: (value) {
+                setState(() => _searchQuery = value);
               },
-            ), // ListView.builder
+            ),
+          ),
+          Expanded(
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : ListView.builder(
+                    itemCount: displayedCourses.length,
+                    itemBuilder: (context, index) {
+                      final course = displayedCourses[index];
+                      return ListTile(
+                        title: Text(course.name),
+                        subtitle: course.description != null
+                            ? Text(course.description!)
+                            : null,
+                      ); // ListTile
+                    },
+                  ), // ListView.builder
+          ),
+        ],
+      ),
       floatingActionButton: AddFAB(onPressed: _showAddCourseDialog),
     ); // Scaffold
   }

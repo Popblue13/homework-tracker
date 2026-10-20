@@ -19,6 +19,7 @@ class _AssignmentListScreenState extends State<AssignmentListScreen> {
   bool _isLoading = true;
   String? _selectedCourseFilter;
   String _searchQuery = '';
+  String _completionFilter = 'All';
   String? _newAssignmentCourse;
   List<String> _courseNames = [];
 
@@ -106,7 +107,11 @@ class _AssignmentListScreenState extends State<AssignmentListScreen> {
       final matchesSearch = assignment.title.toLowerCase().contains(
         _searchQuery.toLowerCase(),
       );
-      return matchesCourse && matchesSearch;
+      final matchesCompletion =
+          _completionFilter == 'All' ||
+          (_completionFilter == 'Complete' && assignment.isCompleted) ||
+          (_completionFilter == 'Incomplete' && !assignment.isCompleted);
+      return matchesCourse && matchesSearch && matchesCompletion;
     }).toList();
 
     return Scaffold(
@@ -152,6 +157,21 @@ class _AssignmentListScreenState extends State<AssignmentListScreen> {
               },
             ),
           ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: DropdownButton<String>(
+              value: _completionFilter,
+              isExpanded: true,
+              items: ['All', 'Incomplete', 'Complete'].map((status) {
+                return DropdownMenuItem(value: status, child: Text(status));
+              }).toList(),
+              onChanged: (value) {
+                if (value != null) {
+                  setState(() => _completionFilter = value);
+                }
+              },
+            ),
+          ),
           Expanded(
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
@@ -165,7 +185,9 @@ class _AssignmentListScreenState extends State<AssignmentListScreen> {
                         subtitle: Text('Course: ${assignment.courseName}'),
                         value: assignment.isCompleted,
                         onChanged: (_) async {
-                          await _assignmentPresenter.toggleCompleted(index);
+                          await _assignmentPresenter.toggleCompleted(
+                            assignments.indexOf(assignment),
+                          );
                           setState(() {});
                         },
                       );
